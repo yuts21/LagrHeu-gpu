@@ -29,15 +29,12 @@ int LocalSearch::opt10(int* c)
 {  
    int z=0;
    int isol;
-   int* capleft = nullptr;
-   int* temp_req = nullptr;
-   int* temp_c = nullptr;
-   node<int>* anss = nullptr;
+   int* capleft = GAP->capleft;
+   int* temp_req = GAP->temp_req;
+   int* temp_c = GAP->temp_c;
+   node<int>* anss = GAP->anss;
    node<int> ans;
-   checkCudaErrors(cudaMalloc((void **)&capleft, sizeof(int) * m));
-   checkCudaErrors(cudaMalloc((void **)&temp_req, sizeof(int) * n * m));
-   checkCudaErrors(cudaMalloc((void **)&temp_c, sizeof(int) * n));
-   checkCudaErrors(cudaMalloc((void **)&anss, sizeof(node<int>) * n * m));
+   
 
    vectorCopy<<<NumBlocks(m), NUM_THREADS>>>(GAP->cap, capleft, m);
    vectorInit<<<NumBlocks(m*n), NUM_THREADS>>>(temp_req, m*n, 0);
@@ -76,9 +73,8 @@ l0:
       goto l0;
    }
 
-   checkCudaErrors(cudaFree(capleft));
-   checkCudaErrors(cudaFree(temp_req));
-   checkCudaErrors(cudaFree(temp_c));
-   checkCudaErrors(cudaFree(anss));
+   
+   
+   
    return z;
 }

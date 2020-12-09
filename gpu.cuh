@@ -10,6 +10,9 @@
 #include <thrust/sort.h>
 #include <thrust/copy.h>
 
+// reduction操作所使用的数组空间，其中以最大的T类型(node<double>)为准，而空间大小由max(n*m, m*Kcap)决定
+extern void* temp_reduction;
+
 __global__ void subInit(int* subgrad, int* lbsol, int n);
 
 // 将解数组转为解矩阵的req值

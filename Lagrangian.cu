@@ -197,17 +197,12 @@ void Lagrangian::subproblem_cap(int* c, double *zlb, double *zlbBest, int zub, d
    // Q为工厂i对工作j的资源,直接用req取代
    // val为工厂i对工作j减去拉格朗日乘子权值后的花费，再取反以在背包求得最小值
    // Ksol为工厂i背包后求得的解，1为包含工作j、0为不包含
-   double* val = nullptr;
-   int* Ksol = nullptr;
+   double* val = GAP->val;
+   int* Ksol = GAP->Ksol;
    // 更新下界、次梯度
-   node<int>* temp_ksol = nullptr;
-   node<int>* temp_res = nullptr;
-   int* temp_subgrad = nullptr;
-   checkCudaErrors(cudaMalloc((void **)&val, sizeof(double) * m * n));
-   checkCudaErrors(cudaMalloc((void **)&Ksol, sizeof(int) * m * n));
-   checkCudaErrors(cudaMalloc((void **)&temp_ksol, sizeof(node<int>) * m * n));
-   checkCudaErrors(cudaMalloc((void **)&temp_res, sizeof(node<int>) * n));
-   checkCudaErrors(cudaMalloc((void **)&temp_subgrad, sizeof(int) * n));
+   node<int>* temp_ksol = GAP->temp_ksol;
+   node<int>* temp_res = GAP->temp_res;
+   int* temp_subgrad = GAP->temp_subgrad;
 
    // 初始化次梯度为1，初始解为-1
    subInit<<<NumBlocks(n), NUM_THREADS>>>(subgrad, lbsol, n);
@@ -225,7 +220,7 @@ void Lagrangian::subproblem_cap(int* c, double *zlb, double *zlbBest, int zub, d
    // 对于每个工厂均求一遍吸收惩罚项后的背包
    // 对于m个工厂并行，对于每个物品的dp过程不能并行
    // zlb减去每个工厂的总花费(有重复解)
-   *zlb -= KDynRecur(m, n, GAP->cap, req, val, Ksol);
+   *zlb -= GAP->KDynRecur(m, n, GAP->cap, req, val, Ksol);
    //printf("Sub3 %lf\n", *zlb);
    // 启发式：对每个工作更新其状态（最终解为最后一个工厂），使用归约最大值得到
    vectorToNode<<<NumBlocks(m*n), NUM_THREADS>>>(Ksol, temp_ksol, m*n, n);
@@ -246,10 +241,5 @@ void Lagrangian::subproblem_cap(int* c, double *zlb, double *zlbBest, int zub, d
    if(*zlb>*zlbBest) 
       *zlbBest = *zlb;
 
-   checkCudaErrors(cudaFree(val));
-   checkCudaErrors(cudaFree(Ksol));
-   checkCudaErrors(cudaFree(temp_ksol));
-   checkCudaErrors(cudaFree(temp_res));
-   checkCudaErrors(cudaFree(temp_subgrad));
    return;
 }

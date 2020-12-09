@@ -8,6 +8,31 @@ using namespace std;
 
 GeneralizedAssignemnt::GeneralizedAssignemnt() {
     //ctor
+    cap = nullptr;
+    c = nullptr;
+    req = nullptr;
+    sol = nullptr;
+    solbest = nullptr;
+    randStates = nullptr;
+    temp_req = nullptr;
+    temp_req_node = nullptr;
+    capres = nullptr;
+    f = nullptr;
+    final_f = nullptr;
+    anss = nullptr;
+    val = nullptr;
+    Ksol = nullptr;
+    temp_ksol = nullptr;
+    temp_cost = nullptr;
+    fsol = nullptr;
+    whoIs = nullptr;
+    q = nullptr;
+    sort_data = nullptr;
+    sort_keys = nullptr;
+    temp_res = nullptr;
+    temp_subgrad = nullptr;
+    capleft = nullptr;
+    temp_c = nullptr;
     EPS = 0.0001;
 }
 
@@ -19,7 +44,28 @@ GeneralizedAssignemnt::~GeneralizedAssignemnt() {
     if (req!=nullptr) checkCudaErrors(cudaFree(req));
     if (sol!=nullptr) checkCudaErrors(cudaFree(sol));
     if (solbest!=nullptr) checkCudaErrors(cudaFree(solbest));
-    //if (randStates!=nullptr) checkCudaErrors(cudaFree(randStates));
+    if (randStates!=nullptr) checkCudaErrors(cudaFree(randStates));
+    if (temp_req!=nullptr) checkCudaErrors(cudaFree(temp_req));
+    if (temp_req_node!=nullptr) checkCudaErrors(cudaFree(temp_req_node));
+    if (capres!=nullptr) checkCudaErrors(cudaFree(capres));
+    if (temp_reduction!=nullptr) checkCudaErrors(cudaFree(temp_reduction));
+    if (f!=nullptr) checkCudaErrors(cudaFree(f));
+    if (final_f!=nullptr) checkCudaErrors(cudaFree(final_f));
+    if (anss!=nullptr) checkCudaErrors(cudaFree(anss));
+    if (val!=nullptr) checkCudaErrors(cudaFree(val));
+    if (Ksol!=nullptr) checkCudaErrors(cudaFree(Ksol));
+    if (temp_ksol!=nullptr) checkCudaErrors(cudaFree(temp_ksol));
+    if (temp_cost!=nullptr) checkCudaErrors(cudaFree(temp_cost));
+    if (fsol!=nullptr) checkCudaErrors(cudaFree(fsol));
+    if (whoIs!=nullptr) checkCudaErrors(cudaFree(whoIs));
+    if (q!=nullptr) checkCudaErrors(cudaFree(q));
+    if (sort_data!=nullptr) checkCudaErrors(cudaFree(sort_data));
+    if (sort_keys!=nullptr) checkCudaErrors(cudaFree(sort_keys));
+    if (temp_res!=nullptr) checkCudaErrors(cudaFree(temp_res));
+    if (temp_subgrad!=nullptr) checkCudaErrors(cudaFree(temp_subgrad));
+    if (capleft!=nullptr) checkCudaErrors(cudaFree(capleft));
+    if (temp_c!=nullptr) checkCudaErrors(cudaFree(temp_c));
+    
 }
 
 /***********************************************
@@ -42,11 +88,7 @@ int GeneralizedAssignemnt::checkSol(int* sol)
 {  
 
     int cost=0;                             // 总花费
-    int* temp_cost = nullptr;          // 当前解对于各工作的花费
-    int* temp_req = nullptr;            // 当前解的在矩阵中的资源数，以归约到前m位已用资源数
     int res_cmp = 0;                      // 用于判断是否工厂全部满足容量
-    checkCudaErrors(cudaMalloc((void **)&temp_cost, sizeof(int) * n));
-    checkCudaErrors(cudaMalloc((void **)&temp_req, sizeof(int) * n * m));
 
     // 各工作当前花费，并求和
     checkInit<<<NumBlocks(n), NUM_THREADS>>>(temp_cost, sol, c, n, m);
@@ -75,8 +117,6 @@ int GeneralizedAssignemnt::checkSol(int* sol)
         goto lendcheckSol;
     }
 lendcheckSol:     
-    checkCudaErrors(cudaFree(temp_cost));
-    checkCudaErrors(cudaFree(temp_req));
     return cost;
 }
 
@@ -116,19 +156,8 @@ int GeneralizedAssignemnt::fixSolViaKnap(int* infeasSol, int* zsol)
     //debug_vector<<<1,1>>>(-192, infeasSol, 1, n);
     //cin.get();
     //printf("12345 %d\n", *zsol);
-    int* sol = nullptr;                  // 当前解
-    //int* minReqFacility = nullptr;    // 各工作对应最小花费的工厂，以第一个出现的为准
+    int* sol = fsol;                  // 当前解
     int nelem = 0;                         // nelem：不可行解的数目
-    int* capres = nullptr;              // 各工厂的剩余容量
-    int* temp_req = nullptr;            // 当前解的在转置矩阵中的资源数，以归约到前m位已用资源数
-    node<int>* temp_req_node = nullptr; // 与temp_req类似，但未转置且封装了pos，以得到各工作占用资源数最少的工厂
-    int* whoIs = nullptr;                // 若需要被修改/已删除，则设为1
-    checkCudaErrors(cudaMalloc((void **)&sol, sizeof(int) * n));
-    //checkCudaErrors(cudaMalloc((void **)&minReqFacility, sizeof(int) * n));
-    checkCudaErrors(cudaMalloc((void **)&capres, sizeof(int) * m));
-    checkCudaErrors(cudaMalloc((void **)&temp_req, sizeof(int) * n * m));
-    checkCudaErrors(cudaMalloc((void **)&temp_req_node, sizeof(node<int>) * m * n));
-    checkCudaErrors(cudaMalloc((void **)&whoIs, sizeof(int) * n));
     // 比较两个工厂的剩余容量 
     // auto compCap = [&capres](int a, int b){ return capres[a] < capres[b]; };  // ompare, ASC order
 
@@ -162,24 +191,19 @@ int GeneralizedAssignemnt::fixSolViaKnap(int* infeasSol, int* zsol)
     //printf("nelem2:    %d\n", nelem);
     //debug_vector<<<1,1>>>(9285, )
 
-    int*     q    = nullptr;      // 物品大小，各工作对于该工厂占用的资源量
-    double* val = nullptr;      // 物品重量，由于重点为fix，尽量让工厂容纳多个工作，此处需求的工作设为1，其他设为-1
-    int*     Ksol= nullptr;      // 对每个工厂进行背包，所得解
-    checkCudaErrors(cudaMalloc((void **)&q, sizeof(int) * n));
-    checkCudaErrors(cudaMalloc((void **)&val, sizeof(double) * n));
-    checkCudaErrors(cudaMalloc((void **)&Ksol, sizeof(int) * n));
+    
+    //double* val（此处使用大小为size(double)*n）      // 物品重量，由于重点为fix，尽量让工厂容纳多个工作，此处需求的工作设为1，其他设为-1
+    //int*     Ksol（此处使用大小为size(int)*n）      // 对每个工厂进行背包，所得解
     
      // 使用cuda的Thrust库，将序号按照剩余容量进行排序
-    int *aaa = nullptr;
-    int *bbb = nullptr;
-    checkCudaErrors(cudaMalloc((void **)&aaa, sizeof(int) * m));
-    checkCudaErrors(cudaMalloc((void **)&bbb, sizeof(int) * m));
-    int* aaaa = (int*)malloc(sizeof(int) * m);
-    get_sort<<<NumBlocks(m), NUM_THREADS>>>(aaa, bbb , m, capres);
+    
+    
+    int* indCap = new int[m];
+    get_sort<<<NumBlocks(m), NUM_THREADS>>>(sort_data, sort_keys , m, capres);
 
 
-    thrust::device_ptr<int> dev_data_ptr(aaa);
-    thrust::device_ptr<int> dev_keys_ptr(bbb);
+    thrust::device_ptr<int> dev_data_ptr(sort_data);
+    thrust::device_ptr<int> dev_keys_ptr(sort_keys);
 /*
     thrust::host_vector<int> indCap, indCap2;
     for(int i = 0; i < n; ++i){
@@ -190,9 +214,9 @@ int GeneralizedAssignemnt::fixSolViaKnap(int* infeasSol, int* zsol)
     node<int>* dv_ptr = thrust::raw_pointer_cast(d_vec.data());
 */
     thrust::sort_by_key(dev_keys_ptr, dev_keys_ptr + m, dev_data_ptr);
-    // debug_vector<<<1,1>>>(-12345, aaa, 1, m);
+    // debug_vector<<<1,1>>>(-12345, sort_data, 1, m);
 
-    checkCudaErrors(cudaMemcpy(aaaa, aaa, m * sizeof(int), cudaMemcpyDeviceToHost));
+    checkCudaErrors(cudaMemcpy(indCap, sort_data, m * sizeof(int), cudaMemcpyDeviceToHost));
     
 
     // 如果所有工作的解都进行了更新
@@ -213,7 +237,7 @@ int GeneralizedAssignemnt::fixSolViaKnap(int* infeasSol, int* zsol)
     // 根据剩余容量升序遍历工厂
     for(int ii=0;ii<m;ii++)
     {  
-        int i = aaaa[ii];                    // consider first warehouaes with small residual capacity
+        int i = indCap[ii];                    // consider first warehouaes with small residual capacity
         //if (i < 0 || i >= m)
         //    cout << "error!" << endl;
         // 由于进行了超限只保留最优的操作，此处if不会发生
@@ -257,19 +281,8 @@ lfeasfix:
 
 lendfix:
     //cout << "end fixSolViaKnap" << endl;
-    checkCudaErrors(cudaFree(sol));
-    //checkCudaErrors(cudaFree(minReqFacility));
-    checkCudaErrors(cudaFree(capres));
-    checkCudaErrors(cudaFree(temp_req));
-    checkCudaErrors(cudaFree(temp_req_node));
-    checkCudaErrors(cudaFree(whoIs));
-    checkCudaErrors(cudaFree(aaa));
-    checkCudaErrors(cudaFree(bbb));
     
-    checkCudaErrors(cudaFree(q));
-    checkCudaErrors(cudaFree(val));
-    checkCudaErrors(cudaFree(Ksol));
-    free(aaaa);
+    delete[] indCap;
 
     return *zsol;
 }
@@ -288,11 +301,6 @@ void GeneralizedAssignemnt::readData(string filePath, unsigned long seed) {
     checkCudaErrors(cudaMalloc((void **)&cap, sizeof(int) * m));
     checkCudaErrors(cudaMalloc((void **)&c, sizeof(int) * m * n));
     checkCudaErrors(cudaMalloc((void **)&req, sizeof(int) * m * n));
-    checkCudaErrors(cudaMalloc((void **)&sol, sizeof(int) * n));
-    checkCudaErrors(cudaMalloc((void **)&solbest, sizeof(int) * n));
-    checkCudaErrors(cudaMalloc((void **)&randStates, sizeof(curandState) * n));
-    randStatesInit<<<NumBlocks(n), NUM_THREADS>>>(randStates, seed, n);
-    // printf("GAP Malloc ! YES\n");
 
     int* temp = new int[m * n];
     for (int i = 0; i < m; i++)
@@ -309,6 +317,44 @@ void GeneralizedAssignemnt::readData(string filePath, unsigned long seed) {
         ifs >> temp[i];
     checkCudaErrors(cudaMemcpy(cap, temp, m * sizeof(int), cudaMemcpyHostToDevice));
     delete[] temp;
+
+    checkCudaErrors(cudaMalloc((void **)&sol, sizeof(int) * n));
+    checkCudaErrors(cudaMalloc((void **)&solbest, sizeof(int) * n));
+    checkCudaErrors(cudaMalloc((void **)&randStates, sizeof(curandState) * n));
+    randStatesInit<<<NumBlocks(n), NUM_THREADS>>>(randStates, seed, n);
+    checkCudaErrors(cudaMalloc((void **)&temp_req, sizeof(int) * n * m));
+    checkCudaErrors(cudaMalloc((void **)&temp_req_node, sizeof(node<int>) * m * n));
+    checkCudaErrors(cudaMalloc((void **)&capres, sizeof(int) * m));
+    temp_reduction = capres;
+    // Kcap归约获得
+    int* dev_Kcap = get_temp(Kcap,1);
+    doReduction(cap, 1, m, dev_Kcap, 1);
+    Kcap = delete_temp(dev_Kcap);
+    Kcap++;
+    temp_reduction = nullptr;
+    checkCudaErrors(cudaMalloc((void **)&temp_reduction, sizeof(node<double>)* max(n, Kcap) * m));
+    checkCudaErrors(cudaMalloc((void **)&f, sizeof(double) * n * Kcap * m));
+    checkCudaErrors(cudaMalloc((void **)&final_f, sizeof(node<double>) * Kcap * m));
+    checkCudaErrors(cudaMalloc((void **)&anss, sizeof(node<int>) * n * m));
+    checkCudaErrors(cudaMalloc((void **)&val, sizeof(double) * m * n));
+    checkCudaErrors(cudaMalloc((void **)&Ksol, sizeof(int) * m * n));
+    checkCudaErrors(cudaMalloc((void **)&temp_ksol, sizeof(node<int>) * m * n));
+    checkCudaErrors(cudaMalloc((void **)&temp_cost, sizeof(int) * n));
+    checkCudaErrors(cudaMalloc((void **)&fsol, sizeof(int) * n));
+    checkCudaErrors(cudaMalloc((void **)&whoIs, sizeof(int) * n));
+    checkCudaErrors(cudaMalloc((void **)&q, sizeof(int) * n));
+    checkCudaErrors(cudaMalloc((void **)&sort_data, sizeof(int) * m));
+    checkCudaErrors(cudaMalloc((void **)&sort_keys, sizeof(int) * m));
+    checkCudaErrors(cudaMalloc((void **)&temp_res, sizeof(node<int>) * n));
+    checkCudaErrors(cudaMalloc((void **)&temp_subgrad, sizeof(int) * n));
+    checkCudaErrors(cudaMalloc((void **)&capleft, sizeof(int) * m));
+    checkCudaErrors(cudaMalloc((void **)&temp_c, sizeof(int) * n));
+   
+
+
+    // printf("GAP Malloc ! YES\n");
+
+    
 
     zub = INT_MAX;
     if (isVerbose)
@@ -338,22 +384,9 @@ void GeneralizedAssignemnt::readData(string filePath, unsigned long seed) {
 
 // 原函数为一个工厂，此处改成多个工厂并行
 // 空间换时间，总空间需要m*n*Kcap
-double KDynRecur(int m, int n, int* cap, int* req, double* val, int* Ksol)
+double GeneralizedAssignemnt::KDynRecur(int m, int n, int* cap, int* req, double* val, int* Ksol)
 {  
     //cout << n << endl;
-    int Kcap = 0;            // Kcap：设为工厂最大容量+1，以方便申请数组空间
-    double* f = nullptr; // 遍历到第i个物品，已用容量为q，工厂k时的最小花费。归约需要，不能改变顺序。
-    node<double>* final_f = nullptr; // dp完成后，已用容量为q、工厂k的最小花费；归约后为各个工厂的最低花费
-    // Kcap归约获得
-    //debug_vector<<<1,1>>>(10,cap,1,m);
-    int* temp = get_temp(Kcap,1);
-    //printf("5\n");
-    doReduction(cap, 1, m, temp, 1);
-    Kcap = delete_temp(temp);
-    Kcap++;
-
-    checkCudaErrors(cudaMalloc((void **)&f, sizeof(double) * n * Kcap * m));
-    checkCudaErrors(cudaMalloc((void **)&final_f, sizeof(node<double>) * Kcap * m));
 
     // 初始化数组f为0
     vectorInit<double><<<NumBlocks(n*Kcap*m), NUM_THREADS>>>(f, n*Kcap*m, 0.0);
@@ -386,20 +419,6 @@ double KDynRecur(int m, int n, int* cap, int* req, double* val, int* Ksol)
     node<double> res;
     checkCudaErrors(cudaMemcpy(&res, final_f, sizeof(node<double>), cudaMemcpyDeviceToHost));
     // 释放空间
-    checkCudaErrors(cudaFree(f));
-    checkCudaErrors(cudaFree(final_f));
 
     return res.data;
-}
-
-// print a 1D array of doubles contents
-void printDblArray(double* a, int n)
-{  
-    /*
-    int i;
-    cout.precision(3);
-    for(i=0;i<n;i++)
-        cout << a[i] << " ";
-    cout << endl;
-    */
 }

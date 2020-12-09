@@ -1,5 +1,7 @@
 #include "gpu.cuh"
 
+// reduction操作所使用的数组空间，其中以最大的T类型(node<double>)为准，而空间大小由max(n*m, m*Kcap)决定
+void* temp_reduction;
 
 // 使用归约方法计算，op为0时求最小值。op为1时求最大值，op为2时求和
 // ans使用指针传入
@@ -78,8 +80,7 @@ template<typename T> void doReduction(T* V, int m, int n, T* ans, int op)
 {
     // printf("doReduction\n");
     //printf("%d\n", sizeof(T));
-    T* temp;  
-    checkCudaErrors(cudaMalloc((void **)&temp, sizeof(T) * n * m));
+    T* temp = (T*)temp_reduction;
     vectorCopy<<<NumBlocks(n*m), NUM_THREADS>>>(V, temp, n*m);
 
     while(n > 1){
@@ -117,7 +118,6 @@ template<typename T> void doReduction(T* V, int m, int n, T* ans, int op)
     else
         debug_vector<<<1,1>>>(5,ans,n,m);
     */
-    checkCudaErrors(cudaFree(temp));
     // printf("yes\n");
 }
 
