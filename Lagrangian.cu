@@ -108,7 +108,11 @@ int Lagrangian::lagrCap(int* c, double alpha, double alphastep, double minAlpha,
       if((zub-zlbBest) < 1.0)                       // -------------------------- Optimum found 
       {  
          if(GAP->isVerbose) cout << "[lagrCap] Found the optimum!!! zopt="<< zub << " zlb=" << zlbBest<<endl;
-         goto lendlagr;
+         checkCudaErrors(cudaFree(lambda));
+         checkCudaErrors(cudaFree(subgrad));
+         checkCudaErrors(cudaFree(lbsol));
+         checkCudaErrors(cudaFree(temp));
+         return zcurr;
       }
       // 继续更新解，启发式搜索
       else                                       // -------------------------- Heuristic block
@@ -167,7 +171,6 @@ int Lagrangian::lagrCap(int* c, double alpha, double alphastep, double minAlpha,
    }
    //cout << alpha << " " << iter << endl;
 
-lendlagr:    
    //if (flog.is_open()) flog.close();
    checkCudaErrors(cudaFree(lambda));
    checkCudaErrors(cudaFree(subgrad));

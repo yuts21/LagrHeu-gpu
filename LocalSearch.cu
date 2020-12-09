@@ -49,19 +49,17 @@ int LocalSearch::opt10(int* c)
    doReduction(temp_c,1,n,temp,2);
    z = delete_temp(temp);
 
-// 毒瘤goto
-l0:
-
-   // 对于每个工作，遍历每个不是当前解的工厂，直到找到花费更少且有剩余容量的。
-   // 找到后更新当前数组，并从头开始搜索，直到无法找到更优解。
-   opt10Main<<<NumBlocks(n*m), NUM_THREADS>>>(c, capleft, req, sol, z, m, n, anss);
-   node<int>* temp2 = get_temp(ans,1);
-   //printf("14\n");
-   doReduction(anss, 1, m * n, temp2, 0);
-   ans = delete_temp(temp2);
-   z = ans.data;
-   if(z != INT_MAX)
-   {      
+   for (; ;) {
+      // 对于每个工作，遍历每个不是当前解的工厂，直到找到花费更少且有剩余容量的。
+      // 找到后更新当前数组，并从头开始搜索，直到无法找到更优解。
+      opt10Main<<<NumBlocks(n*m), NUM_THREADS>>>(c, capleft, req, sol, z, m, n, anss);
+      node<int>* temp2 = get_temp(ans,1);
+      //printf("14\n");
+      doReduction(anss, 1, m * n, temp2, 0);
+      ans = delete_temp(temp2);
+      z = ans.data;
+      if (z == INT_MAX)
+         break;
       int i = ans.pos/n, j = ans.pos%n;
       opt10Update<<<1,1>>>(sol, capleft, req, i, j, n);
       if(z<zub)
@@ -70,11 +68,7 @@ l0:
          zub = z;
          if(GAP->isVerbose) cout << "[1-0 opt] new zub " << zub << endl;
       }
-      goto l0;
    }
 
-   
-   
-   
    return z;
 }

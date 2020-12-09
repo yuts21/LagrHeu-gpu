@@ -329,15 +329,13 @@ __global__ void kdynDP(double* f, int m, int Kcap, int n, int* req, double* val,
         //if (index2D < 0 || index2D >= m * n) {
         //    printf("error!\n");
         //}
-        switch (i)
-        {
-        case 0:
+        if (i == 0) {
             if(q >= req[index2D] && val[index2D] > 0.0){
                 // printf("yesyes\n");
                 f[index3D] = val[index2D];
             }
-            break;
-        default:
+        }
+        else {
             // (i,q,k) = q<req[k][i] ? : max( (i-1,q,k), (i-1,q-req[k][i],k) )
             //if (index3D - Kcap * m < 0 || index3D - Kcap * m >= n*Kcap*m)
             //    printf("error!\n");
@@ -351,7 +349,6 @@ __global__ void kdynDP(double* f, int m, int Kcap, int n, int* req, double* val,
             else
                 f[index3D] = f[index3D - Kcap*m - req[index2D]*m] + val[index2D];
             }
-            break;
         }
     }
 }
@@ -395,7 +392,7 @@ __global__ void kdynDecode(int m, int Kcap, node<double>* imax, int* req, double
 
             // 错误
             // cout << "[KP decodeSol] generic error" << endl;
-            goto lenddecode;
+            return;
         }
 
         // 起始物品
@@ -409,7 +406,6 @@ __global__ void kdynDecode(int m, int Kcap, node<double>* imax, int* req, double
         }
     }
 
-lenddecode:
     //checkSol();
     return;
 }

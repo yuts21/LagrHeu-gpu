@@ -97,7 +97,8 @@ int GeneralizedAssignemnt::checkSol(int* sol)
     //printf("1\n");
     doReduction(temp_cost, 1, n, temp, 2);
     cost = delete_temp(temp);
-    if(cost == INT_MAX) goto lendcheckSol;
+    if(cost == INT_MAX)
+        return cost;
 
     // 各工厂已占用资源
     vectorInit<int><<<NumBlocks(m*n), NUM_THREADS>>>(temp_req, n*m, 0);
@@ -113,10 +114,8 @@ int GeneralizedAssignemnt::checkSol(int* sol)
     // debug_vector<<<1,1>>>(-55555, cap, 1, m);
     // printf("RSD::%d\n",res_cmp);
     if(res_cmp != 0) {
-        cost = INT_MAX;
-        goto lendcheckSol;
+        return INT_MAX;
     }
-lendcheckSol:     
     return cost;
 }
 
@@ -220,55 +219,55 @@ int GeneralizedAssignemnt::fixSolViaKnap(int* infeasSol, int* zsol)
     
 
     // 如果所有工作的解都进行了更新
-    if(nelem == 0)  
-        goto lfeasfix;
-
-
-    // printf("Before Sort\n");
-    /*
-    get_sort<<<NumBlocks(m), NUM_THREADS>>>(dv_ptr, m, capres);
-    thrust::sort(d_vec.begin(), d_vec.end());
-    thrust::copy(d_vec.begin(), d_vec.end(), indCap.begin());
-    // printf("After Sort\n");
-    */
-
-  // 可加入判断capres的
-
-    // 根据剩余容量升序遍历工厂
-    for(int ii=0;ii<m;ii++)
-    {  
-        int i = indCap[ii];                    // consider first warehouaes with small residual capacity
-        //if (i < 0 || i >= m)
-        //    cout << "error!" << endl;
-        // 由于进行了超限只保留最优的操作，此处if不会发生
+    if(nelem) {
+        // printf("Before Sort\n");
         /*
-        if(capres[i]<0)                    // should not happen, to be debugged
-            continue;
+        get_sort<<<NumBlocks(m), NUM_THREADS>>>(dv_ptr, m, capres);
+        thrust::sort(d_vec.begin(), d_vec.end());
+        thrust::copy(d_vec.begin(), d_vec.end(), indCap.begin());
+        // printf("After Sort\n");
         */
-        // 初始化背包
-        // printf("????4111\n");
-        fixKdynInit<<<NumBlocks(n), NUM_THREADS>>>(q, i, n, req, Ksol, whoIs, val);
 
-        // printf("????111111\n");
+        // 可加入判断capres的
 
-        // 通过knapsack求解，参数分别为物品数，背包容量，物品大小，是否在之前被选中，对于该工厂的解
-        // 对于val=-1，由于要求得val最大值，故对结果无影响
-        //cout << "KdynRecur " << ii << endl;
-        nelem -= KDynRecur(1, n, capres+i, q, val, Ksol);
-        //if (nelem < 0)
-        //    cin.get();
-        // printf("NELEM::::%d\n", nelem);
-        // 根据knapsack的结果更新解
-        fixKdynUpdate<<<NumBlocks(n), NUM_THREADS>>>(Ksol, sol, whoIs, i, n);
-        
-        // 未知解均求出时，不用继续遍历
-        if(nelem == 0)                          // solution complete
-            break;
+        // 根据剩余容量升序遍历工厂
+        for(int ii=0;ii<m;ii++)
+        {  
+            int i = indCap[ii];                    // consider first warehouaes with small residual capacity
+            //if (i < 0 || i >= m)
+            //    cout << "error!" << endl;
+            // 由于进行了超限只保留最优的操作，此处if不会发生
+            /*
+            if(capres[i]<0)                    // should not happen, to be debugged
+                continue;
+            */
+            // 初始化背包
+            // printf("????4111\n");
+            fixKdynInit<<<NumBlocks(n), NUM_THREADS>>>(q, i, n, req, Ksol, whoIs, val);
+
+            // printf("????111111\n");
+
+            // 通过knapsack求解，参数分别为物品数，背包容量，物品大小，是否在之前被选中，对于该工厂的解
+            // 对于val=-1，由于要求得val最大值，故对结果无影响
+            //cout << "KdynRecur " << ii << endl;
+            nelem -= KDynRecur(1, n, capres+i, q, val, Ksol);
+            //if (nelem < 0)
+            //    cin.get();
+            // printf("NELEM::::%d\n", nelem);
+            // 根据knapsack的结果更新解
+            fixKdynUpdate<<<NumBlocks(n), NUM_THREADS>>>(Ksol, sol, whoIs, i, n);
+            
+            // 未知解均求出时，不用继续遍历
+            if(nelem == 0)                          // solution complete
+                break;
+        }
+        // 未知解无法求出，总容量直接返回INT_MAX
+        if(nelem != 0) { // could not recover fesibility
+            delete[] indCap;
+            return *zsol;
+        }
     }
-    // 未知解无法求出，总容量直接返回INT_MAX
-    if(nelem != 0) goto lendfix;                 // could not recover fesibility
 
-lfeasfix:
     // 得到可行解；若该解更优，则更新
     vectorCopy<int><<<NumBlocks(n), NUM_THREADS>>>(sol, infeasSol, n);
     *zsol = checkSol(sol);
@@ -279,11 +278,9 @@ lfeasfix:
         if(isVerbose) cout << "[fixSol] -------- zub improved! " << zub << endl;
     }
 
-lendfix:
     //cout << "end fixSolViaKnap" << endl;
     
     delete[] indCap;
-
     return *zsol;
 }
 
