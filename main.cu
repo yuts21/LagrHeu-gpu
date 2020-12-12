@@ -27,8 +27,6 @@ int main(int argc, char *argv[]) {
     size_t heapsize = sizeof(double) * 1600*800*8000;
     checkCudaErrors(cudaDeviceSetLimit(cudaLimitMallocHeapSize, heapsize));
 
-    // 计算运行总时间
-    clock_t start_t = 0, end_t = 1;
     // GAP类与对象
     GeneralizedAssignemnt* GAP = new GeneralizedAssignemnt();
     int res;
@@ -61,7 +59,7 @@ int main(int argc, char *argv[]) {
 
     maxIter = maxIter*GAP->n*GAP->m;
 
-    start_t = clock();
+    clock_t start_t = clock();
     // LAGR类与对象
 
     Lagrangian* LAGR = new Lagrangian(GAP, GAP->zub);
@@ -71,7 +69,7 @@ int main(int argc, char *argv[]) {
     res = LAGR->lagrCap(GAP->c, alpha, alphastep, minalpha, innerIter, maxIter);
     delete LAGR;
 
-    end_t = clock();
+    clock_t end_t = clock();
     if (isVerbose)
         cout << "Time: " << (double)(end_t - start_t)/CLOCKS_PER_SEC << endl;
     cout << GAP->zub << endl;

@@ -123,9 +123,9 @@ int Lagrangian::lagrCap(int* c, double alpha, double alphastep, double minAlpha,
             // printf("222\n");
             // 通过背包更新解
             //cout << "fixSolViaKnap" << endl;
-            zcurr = GAP->fixSolViaKnap(lbsol, &zcurr);   // hope to fix infeasibilities
+            //zcurr = GAP->fixSolViaKnap(lbsol, &zcurr);   // hope to fix infeasibilities
+            zcurr = GAP->fixSol(lbsol, &zcurr);
          }
-            //GAP->fixSol(lbsol, &zcurr);       
          // 如果获得的解与下界较接近，则通过局部搜索尝试得到更优解
          if(zcurr < 10*zlb)
          {  

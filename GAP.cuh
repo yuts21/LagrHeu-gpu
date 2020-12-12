@@ -21,7 +21,9 @@ class GeneralizedAssignemnt {
       int Kcap;    // Kcap：设为工厂最大容量+1，以方便申请数组空间
       int nDays;   // planning horizon (if scheduling)
       // c与req本质上为2维
+      int* c_cpu;
       int* c;     // assignment costs
+      int* req_cpu;
       int* req;   // client requests
       int* cap;   // server capacities
 
@@ -32,7 +34,6 @@ class GeneralizedAssignemnt {
       curandState* randStates;
 
       int* temp_req;
-      node<int>* temp_req_node;
       double* f; // 遍历到第i个物品，已用容量为q，工厂k时的最小花费。归约需要，不能改变顺序。
       node<double>* final_f; // dp完成后，已用容量为q、工厂k的最小花费；归约后为各个工厂的最低花费
       node<int>* anss;
@@ -42,11 +43,6 @@ class GeneralizedAssignemnt {
       int* temp_cost;          // 当前解对于各工作的花费
 
       int* fsol;                  // 当前解
-      int* capres;              // 各工厂的剩余容量
-      int* whoIs;                // 若需要被修改/已删除，则设为1
-      int*     q;      // 物品大小，各工作对于该工厂占用的资源量
-      int *sort_data;
-      int *sort_keys;
 
       node<int>* temp_res;
       int* temp_subgrad;

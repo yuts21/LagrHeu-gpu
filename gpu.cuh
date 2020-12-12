@@ -59,14 +59,6 @@ __global__ void subInit(int* subgrad, int* lbsol, int n);
 
 __global__ void checkInit(int* temp_cost, int* sol, int* c, int n, int m);
 
-__global__ void fixsolInit(int* sol, int* infeasSol, int* temp_req_matrix, int* req, int n, int m, curandState* state);
-
-__global__ void fixsolMain(node<int>* min_req, int* capres, int* sol, int* whoIs, int* req, int* cap, int* nelem, int n);
-
-__global__ void fixKdynInit(int* q, int i, int n, int* req, int* Ksol, int* whoIs, double* val);
-
-__global__ void fixKdynUpdate(int* Ksol, int* sol, int* whoIs, int i, int n);
-
 __global__ void kdynInit(double* val, int* ksol, int* c, double* lambda, int m, int n);
 
 __global__ void kdynDP(double* f, int m, int Kcap, int n, int* req, double* val, int* cap, int i);
