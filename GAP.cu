@@ -3,6 +3,7 @@
 #include <climits>
 #include "GAP.cuh"
 #include "gpu.cuh"
+#include "node.cuh"
 using namespace std;
 
 
@@ -33,6 +34,7 @@ GeneralizedAssignemnt::GeneralizedAssignemnt() {
     temp_subgrad = nullptr;
     capleft = nullptr;
     temp_c = nullptr;
+    checkCudaErrors(cudaMalloc((void **)&temp_var, sizeof(node<double>)));
     EPS = 0.0001;
 }
 
@@ -65,7 +67,7 @@ GeneralizedAssignemnt::~GeneralizedAssignemnt() {
     if (temp_subgrad!=nullptr) checkCudaErrors(cudaFree(temp_subgrad));
     if (capleft!=nullptr) checkCudaErrors(cudaFree(capleft));
     if (temp_c!=nullptr) checkCudaErrors(cudaFree(temp_c));
-    
+    checkCudaErrors(cudaFree(temp_var));
 }
 
 /***********************************************
@@ -93,7 +95,7 @@ int GeneralizedAssignemnt::checkSol(int* sol)
     // 各工作当前花费，并求和
     checkInit<<<NumBlocks(n), NUM_THREADS>>>(temp_cost, sol, c, n, m);
     // debug_vector<<<1,1>>>(44444, temp_cost, 1, n);
-    int* temp = get_temp(cost, 1);
+    int* temp = get_temp(cost);
     //printf("1\n");
     doReduction(temp_cost, 1, n, temp, 2);
     cost = delete_temp(temp);
@@ -106,7 +108,7 @@ int GeneralizedAssignemnt::checkSol(int* sol)
     //printf("2\n");
     doReduction(temp_req, m, n, temp_req, 2);
     // 与资源可用数进行比较，若超过，则res!=0
-    temp = get_temp(res_cmp, 1);
+    temp = get_temp(res_cmp);
     vectorCmpLess<int><<<NumBlocks(m), NUM_THREADS>>>(temp_req, cap, m, temp);
     res_cmp = delete_temp(temp);
     // debug_vector<<<1,1>>>(55555, sol, 1, n);
@@ -183,7 +185,7 @@ int GeneralizedAssignemnt::fixSolViaKnap(int* infeasSol, int* zsol)
     // 遍历若不可行，删去非最优解
     vectorInit<<<NumBlocks(n), NUM_THREADS>>>(whoIs, n, 0);
     // printf("nelem1:    %d\n", nelem);
-    int* temp = get_temp(nelem,1);
+    int* temp = get_temp(nelem);
     fixsolMain<<<1, 1>>>(temp_req_node, capres, sol, whoIs, req, cap, temp, n);
     // debug_vector<<<1,1>>>(-123, capres, 1, m);
     nelem = delete_temp(temp);
@@ -195,7 +197,6 @@ int GeneralizedAssignemnt::fixSolViaKnap(int* infeasSol, int* zsol)
     //int*     Ksol（此处使用大小为size(int)*n）      // 对每个工厂进行背包，所得解
     
      // 使用cuda的Thrust库，将序号按照剩余容量进行排序
-    
     
     int* indCap = new int[m];
     get_sort<<<NumBlocks(m), NUM_THREADS>>>(sort_data, sort_keys , m, capres);
@@ -256,7 +257,6 @@ int GeneralizedAssignemnt::fixSolViaKnap(int* infeasSol, int* zsol)
             // printf("NELEM::::%d\n", nelem);
             // 根据knapsack的结果更新解
             fixKdynUpdate<<<NumBlocks(n), NUM_THREADS>>>(Ksol, sol, whoIs, i, n);
-            
             // 未知解均求出时，不用继续遍历
             if(nelem == 0)                          // solution complete
                 break;
@@ -324,7 +324,7 @@ void GeneralizedAssignemnt::readData(string filePath, unsigned long seed) {
     checkCudaErrors(cudaMalloc((void **)&capres, sizeof(int) * m));
     temp_reduction = capres;
     // Kcap归约获得
-    int* dev_Kcap = get_temp(Kcap,1);
+    int* dev_Kcap = get_temp(Kcap);
     doReduction(cap, 1, m, dev_Kcap, 1);
     Kcap = delete_temp(dev_Kcap);
     Kcap++;

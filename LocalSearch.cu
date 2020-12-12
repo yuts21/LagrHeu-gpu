@@ -44,7 +44,7 @@ int LocalSearch::opt10(int* c)
    vectorSub<int><<<NumBlocks(m), NUM_THREADS>>>(capleft,temp_req, capleft,m);
 
    opt10Init<<<NumBlocks(n), NUM_THREADS>>>(temp_c,c,sol,n);
-   int* temp = get_temp(z,1);
+   int* temp = get_temp(z);
    //printf("13\n");
    doReduction(temp_c,1,n,temp,2);
    z = delete_temp(temp);
@@ -53,7 +53,7 @@ int LocalSearch::opt10(int* c)
       // 对于每个工作，遍历每个不是当前解的工厂，直到找到花费更少且有剩余容量的。
       // 找到后更新当前数组，并从头开始搜索，直到无法找到更优解。
       opt10Main<<<NumBlocks(n*m), NUM_THREADS>>>(c, capleft, req, sol, z, m, n, anss);
-      node<int>* temp2 = get_temp(ans,1);
+      node<int>* temp2 = get_temp(ans);
       //printf("14\n");
       doReduction(anss, 1, m * n, temp2, 0);
       ans = delete_temp(temp2);

@@ -24,6 +24,8 @@ using namespace std;
 // __device__ extern double temp_double_1;
 // __device__ extern double temp_double_2;
 
+extern void* temp_var;
+
 template<typename T> __device__ __host__  T maxx(T a, T b);
 extern template __device__ __host__ int maxx(int a, int b);
 extern template __device__ __host__  double maxx(double a, double b);
@@ -152,11 +154,11 @@ extern template  __global__ void debug_vector<double>( int id, double* V, int m,
 extern template  __global__ void debug_vector<node<int>>(int id, node<int>* V, int m, int n);
 extern template  __global__ void debug_vector<node<double>>( int id, node<double>* V, int m, int n);
 
-template<typename T>  __host__  T* get_temp(T a, int n);
-extern template  __host__ int* get_temp(int a, int n);
-extern template  __host__ double* get_temp(double a, int n);
-extern template  __host__ node<int>* get_temp(node<int> a, int n);
-extern template  __host__ node<double>* get_temp(node<double> a, int n);
+template<typename T>  __host__  T* get_temp(T a);
+extern template  __host__ int* get_temp(int a);
+extern template  __host__ double* get_temp(double a);
+extern template  __host__ node<int>* get_temp(node<int> a);
+extern template  __host__ node<double>* get_temp(node<double> a);
 
 template<typename T>  __host__  T delete_temp(T* a);
 extern template  __host__ int delete_temp(int* a);

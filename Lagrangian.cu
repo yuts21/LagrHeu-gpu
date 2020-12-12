@@ -146,7 +146,7 @@ int Lagrangian::lagrCap(int* c, double alpha, double alphastep, double minAlpha,
       //cout << "cal step" << endl;
       lagrInit<<<NumBlocks(n), NUM_THREADS>>>(subgrad, temp, n);
       // debug_vector<<<1,1>>>(111122, subgrad, 1, n);
-      int* temp_int = get_temp(sumSubGrad2, 1);
+      int* temp_int = get_temp(sumSubGrad2);
       //printf("8\n");
       doReduction(temp, 1,n,temp_int,2);
       sumSubGrad2 = delete_temp(temp_int);
@@ -211,7 +211,7 @@ void Lagrangian::subproblem_cap(int* c, double *zlb, double *zlbBest, int zub, d
    subInit<<<NumBlocks(n), NUM_THREADS>>>(subgrad, lbsol, n);
    //printf("Sub %lf\n", *zlb);
    // 对拉格朗日乘子求和，作为花费下界
-   double* temp = get_temp(*zlb,1);
+   double* temp = get_temp(*zlb);
    //printf("9\n");
    doReduction(lambda, 1, n, temp, 2);
    *zlb = delete_temp(temp);

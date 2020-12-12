@@ -4,6 +4,7 @@ template class node<int>;
 template class node<double>;
 
 node<double> NDinit;
+void *temp_var;
 
 // __device__ int temp_int;
 // __device__ double temp_double_1;
@@ -125,24 +126,19 @@ int __device__ __host__ get_pos(double A)
     return 0;
 }
 
-template<typename T>  __host__  T* get_temp(T a, int n){
-    T* temp = nullptr;
-    checkCudaErrors(cudaMalloc((void **)&temp, sizeof(T)*n));
-    // if(temp != nullptr) printf("Malloc temp Suc\n");
-    vectorInit<<<NumBlocks(n),NUM_THREADS>>>(temp, n, a);
+template<typename T>  __host__  T* get_temp(T a){
+    T* temp = (T*)temp_var;
+    vectorInit<<<1,1>>>(temp, 1, a);
     return temp;
 }
-template  __host__ int* get_temp(int a, int n);
-template  __host__ double* get_temp(double a, int n);
-template  __host__ node<int>* get_temp(node<int> a, int n);
-template  __host__ node<double>* get_temp(node<double> a, int n);
+template  __host__ int* get_temp(int a);
+template  __host__ double* get_temp(double a);
+template  __host__ node<int>* get_temp(node<int> a);
+template  __host__ node<double>* get_temp(node<double> a);
 
 template<typename T>  __host__  T delete_temp(T* a){
-    T *now = (T*)malloc(sizeof(T));
-    checkCudaErrors(cudaMemcpy(now, a, sizeof(T), cudaMemcpyDeviceToHost));
-    T ans = *now;
-    checkCudaErrors(cudaFree(a));
-    free(now);
+    T ans;
+    checkCudaErrors(cudaMemcpy(&ans, a, sizeof(T), cudaMemcpyDeviceToHost));
     return ans;
 }
 template  __host__ int delete_temp(int* a);

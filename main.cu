@@ -24,9 +24,7 @@ __global__ void dodo(int*V)
 }*/
 
 int main(int argc, char *argv[]) {
-    NDinit.data = NDinit.pos = 0;
-    
-    size_t heapsize = sizeof(double) * 1600*80000000*8000;
+    size_t heapsize = sizeof(double) * 1600*800*8000;
     checkCudaErrors(cudaDeviceSetLimit(cudaLimitMallocHeapSize, heapsize));
 
     // 计算运行总时间
