@@ -1,4 +1,5 @@
 #include "node.cuh"
+#include "helper.cuh"
 
 template class node<int>;
 template class node<double>;

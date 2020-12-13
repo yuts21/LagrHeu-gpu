@@ -3,9 +3,9 @@
 #include <cuda_runtime.h>
 #include <iostream>
 // helper functions and utilities to work with CUDA
-#include <helper_functions.h>
+//#include <helper_functions.h>
 // block sync
-#include <helper_cuda.h>
+//#include <helper_cuda.h>
 #include <cooperative_groups.h>
 
 #include <cuda.h>

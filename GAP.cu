@@ -4,6 +4,7 @@
 #include "GAP.cuh"
 #include "gpu.cuh"
 #include "node.cuh"
+#include "helper.cuh"
 using namespace std;
 
 

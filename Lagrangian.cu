@@ -1,6 +1,7 @@
 ﻿#include "Lagrangian.cuh"
 #include "gpu.cuh"
 #include "LocalSearch.cuh"
+#include "helper.cuh"
 
 
 Lagrangian::Lagrangian(GeneralizedAssignemnt* GAPinstance, int & zz) : zub(zz)

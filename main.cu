@@ -2,6 +2,7 @@
 #include "GAP.cuh"
 #include "Lagrangian.cuh"
 #include "gpu.cuh"
+#include "helper.cuh"
 using namespace std;
 
 
