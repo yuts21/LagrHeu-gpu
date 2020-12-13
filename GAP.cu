@@ -9,6 +9,7 @@ using namespace std;
 
 GeneralizedAssignemnt::GeneralizedAssignemnt() {
     //ctor
+    cap_cpu = nullptr;
     cap = nullptr;
     c_cpu = nullptr;
     c = nullptr;
@@ -61,6 +62,7 @@ GeneralizedAssignemnt::~GeneralizedAssignemnt() {
 
     if (c_cpu != nullptr) delete[] c_cpu;
     if (req_cpu != nullptr) delete[] req_cpu;
+    if (cap_cpu != nullptr) delete[] cap_cpu;
 }
 
 /***********************************************
@@ -131,11 +133,11 @@ __global__ void get_sort(int* A, int* B, int n, int* P){
  * 初始化            【O(max(m,n))->O(1)】
  * 删超限解，更新容量 【O(n)】
  *    (暂无法并行)
- * 计算新解          【n】*【O(m)->O(log_m)】
+ * 计算新解          【n】*【O(m)】
  *    (由于每个结果影响后面的，对于工作，无法并行)
  * 更新全局解        【O(n)->O(1)】
  * 
- * 【O(n*m)->O(n*log_m)】
+ * 【O(n*m)】
 ***********************************************/
 // 贪心修正可行解，按顺序删除超限的解，目标函数值为当前下界、
 // 参数1：旧解->新解 参数2：总花费
@@ -143,17 +145,13 @@ __global__ void get_sort(int* A, int* B, int n, int* P){
 int GeneralizedAssignemnt::fixSol(int* infeasSol, int* zsol)
 {  int i,j,imin=-1;
    int minreq;
-   /**************** 申请gpu空间 *******************************************************************/
    int* capres = new int[m];
    int* sol = new int[n];
 
    // 初始化限制与旧解
-   /***************** 1个block，m个thread，无需共享内存；初始化赋值 **********************************/
-   checkCudaErrors(cudaMemcpy(capres, cap, sizeof(int) * m, cudaMemcpyDeviceToHost));
-   /***************** 1个block，n个thread，无需共享内存；初始化赋值 **********************************/
+   memcpy(capres, cap_cpu, sizeof(int) * m);
    checkCudaErrors(cudaMemcpy(sol, infeasSol, sizeof(int) * n, cudaMemcpyDeviceToHost));
 
-   /***************** 由于有序，暂无法进行并行计算 ****************************************************/
    // 重新计算剩余容量。如果容量不足，则将此处解设置为-1
    // ricalcolo capacità residue. Se sovrassegnato, metto a sol a -1
    for(j=0;j<n;j++)
@@ -176,7 +174,6 @@ int GeneralizedAssignemnt::fixSol(int* infeasSol, int* zsol)
       // reassign i -1
       minreq = INT_MAX;
       imin = -1;
-      /***************** 1个block，m个thread，需要共享内存m*int；找到可以容纳的工厂 **************************/
       // 遍历工厂，找到最后一个可以容纳的工厂
       for(i=0;i<m;i++)
          if(capres[i]>=req_cpu[ID2D(i, j, n)] && req_cpu[ID2D(i, j, n)] < minreq)
@@ -202,12 +199,10 @@ int GeneralizedAssignemnt::fixSol(int* infeasSol, int* zsol)
    // 如果更新后的解小于上限（最优解），更新并输出信息
    if(*zsol<zub)
    {  
-      /***************** 1个block，n个thread，无需共享内存 **************************************************/
       vectorCopy<<<NumBlocks(n), NUM_THREADS>>>(infeasSol, solbest, n);
       zub = *zsol;
       if(isVerbose) cout << "[fixSol] -------- zub improved! " << zub << endl;
    }
-   /***************** 1个block，n个thread，无需共享内存 **************************************************/
    
    delete capres;
    delete sol;
@@ -238,11 +233,10 @@ void GeneralizedAssignemnt::readData(string filePath, unsigned long seed) {
         for (int j = 0; j < n; j++)
             ifs >> req_cpu[ID2D(i, j, n)];
     checkCudaErrors(cudaMemcpy(req, req_cpu, m * n * sizeof(int), cudaMemcpyHostToDevice));
-    int* temp = new int[m];
+    cap_cpu = new int[m];
     for (int i = 0; i < m; i++)
-        ifs >> temp[i];
-    checkCudaErrors(cudaMemcpy(cap, temp, m * sizeof(int), cudaMemcpyHostToDevice));
-    delete[] temp;
+        ifs >> cap_cpu[i];
+    checkCudaErrors(cudaMemcpy(cap, cap_cpu, m * sizeof(int), cudaMemcpyHostToDevice));
 
     checkCudaErrors(cudaMalloc((void **)&sol, sizeof(int) * n));
     checkCudaErrors(cudaMalloc((void **)&solbest, sizeof(int) * n));

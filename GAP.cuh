@@ -25,6 +25,7 @@ class GeneralizedAssignemnt {
       int* c;     // assignment costs
       int* req_cpu;
       int* req;   // client requests
+      int* cap_cpu;
       int* cap;   // server capacities
 
       int *sol,*solbest;    // for ewach client, its server
