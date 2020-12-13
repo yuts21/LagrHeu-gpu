@@ -178,7 +178,7 @@ struct SharedMemory <double>
 };
 
 template <>
-struct SharedMemory <node<int>>
+struct SharedMemory <node<int> >
 {
     __device__ node<int> *getPointer()
     {
@@ -188,7 +188,7 @@ struct SharedMemory <node<int>>
 };
 
 template <>
-struct SharedMemory <node<double>>
+struct SharedMemory <node<double> >
 {
     __device__ node<double> *getPointer()
     {

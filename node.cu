@@ -301,8 +301,8 @@ template<typename T> __global__ void debug_vector(int id, T* V, int m, int n)
 }
 template __global__ void debug_vector<int>(int id, int* V, int m, int n);
 template __global__ void debug_vector<double>( int id, double* V, int m, int n);
-template __global__ void debug_vector<node<int>>(int id, node<int>* V, int m, int n);
-template __global__ void debug_vector<node<double>>( int id, node<double>* V, int m, int n);
+template __global__ void debug_vector<node<int> >(int id, node<int>* V, int m, int n);
+template __global__ void debug_vector<node<double> >( int id, node<double>* V, int m, int n);
 
 
 template __global__ void vectorInit<int>(int* V, int n, int s);
@@ -312,16 +312,16 @@ template __global__ void vectorInitIndex<int>(int* V, int n);
 template __global__ void vectorInitIndex<double>(double* V, int n);
 template __global__ void vectorCopy<int>(int* S,int* V, int n);
 template __global__ void vectorCopy<double>(double* S,double* V, int n);
-template __global__ void vectorCopy<node<int>>(node<int>* S,node<int>* V, int n);
-template __global__ void vectorCopy<node<double>>(node<double>* S,node<double>* V, int n);
+template __global__ void vectorCopy<node<int> >(node<int>* S,node<int>* V, int n);
+template __global__ void vectorCopy<node<double> >(node<double>* S,node<double>* V, int n);
 template __global__ void vectorAdd<int>(int* S1, int* S2, int* V, int n);
 template __global__ void vectorAdd<double>(double* S1, double* S2, double* V, int n);
-template __global__ void vectorAdd<node<int>>(node<int>* S1, node<int>* S2, node<int>* V, int n);
-template __global__ void vectorAdd<node<double>>(node<double>* S1, node<double>* S2, node<double>* V, int n);
+template __global__ void vectorAdd<node<int> >(node<int>* S1, node<int>* S2, node<int>* V, int n);
+template __global__ void vectorAdd<node<double> >(node<double>* S1, node<double>* S2, node<double>* V, int n);
 template __global__ void vectorSub<int>(int* S1, int* S2, int* V, int n);
 template __global__ void vectorSub<double>(double* S1, double* S2, double* V, int n);
-template __global__ void vectorSub<node<int>>(node<int>* S1, node<int>* S2, node<int>* V, int n);
-template __global__ void vectorSub<node<double>>(node<double>* S1, node<double>* S2, node<double>* V, int n);
+template __global__ void vectorSub<node<int> >(node<int>* S1, node<int>* S2, node<int>* V, int n);
+template __global__ void vectorSub<node<double> >(node<double>* S1, node<double>* S2, node<double>* V, int n);
 template __global__ void vectorCmpLess<int>(int* S, int* V, int n, int* res);
 template __global__ void vectorCmpLess<double>(double* S, double* V, int n, int* res);
 

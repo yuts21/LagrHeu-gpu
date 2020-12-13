@@ -124,24 +124,24 @@ extern template __global__ void vectorInitIndex<double>(double* V, int n);
 template<typename T> __global__ void vectorCopy(T* S, T* V, int n);
 extern template __global__ void vectorCopy<int>(int* S,int* V, int n);
 extern template __global__ void vectorCopy<double>(double* S,double* V, int n);
-extern template __global__ void vectorCopy<node<int>>(node<int>* S,node<int>* V, int n);
-extern template __global__ void vectorCopy<node<double>>(node<double>* S,node<double>* V, int n);
+extern template __global__ void vectorCopy<node<int> >(node<int>* S,node<int>* V, int n);
+extern template __global__ void vectorCopy<node<double> >(node<double>* S,node<double>* V, int n);
 
 
 // 数组相加
 template<typename T> __global__ void vectorAdd(T* S1, T* S2, T* V, int n);
 extern template __global__ void vectorAdd<int>(int* S1, int* S2, int* V, int n);
 extern template __global__ void vectorAdd<double>(double* S1, double* S2, double* V, int n);
-extern template __global__ void vectorAdd<node<int>>(node<int>* S1, node<int>* S2, node<int>* V, int n);
-extern template __global__ void vectorAdd<node<double>>(node<double>* S1, node<double>* S2, node<double>* V, int n);
+extern template __global__ void vectorAdd<node<int> >(node<int>* S1, node<int>* S2, node<int>* V, int n);
+extern template __global__ void vectorAdd<node<double> >(node<double>* S1, node<double>* S2, node<double>* V, int n);
 
 
 // 数组相减
 template<typename T> __global__ void vectorSub(T* S1, T* S2, T* V, int n); 
 extern template __global__ void vectorSub<int>(int* S1, int* S2, int* V, int n);
 extern template __global__ void vectorSub<double>(double* S1, double* S2, double* V, int n);
-extern template __global__ void vectorSub<node<int>>(node<int>* S1, node<int>* S2, node<int>* V, int n);
-extern template __global__ void vectorSub<node<double>>(node<double>* S1, node<double>* S2, node<double>* V, int n);
+extern template __global__ void vectorSub<node<int> >(node<int>* S1, node<int>* S2, node<int>* V, int n);
+extern template __global__ void vectorSub<node<double> >(node<double>* S1, node<double>* S2, node<double>* V, int n);
 
 // 数组比较，若S均<=T，则res=0，否则res非零
 template<typename T> __global__ void vectorCmpLess(T* S, T* V, int n, int* res);
@@ -151,8 +151,8 @@ extern template __global__ void vectorCmpLess<double>(double* S, double* V, int 
 template<typename T>  __global__ void debug_vector(int id, T* V, int m, int n);
 extern template  __global__ void debug_vector<int>(int id, int* V, int m, int n);
 extern template  __global__ void debug_vector<double>( int id, double* V, int m, int n);
-extern template  __global__ void debug_vector<node<int>>(int id, node<int>* V, int m, int n);
-extern template  __global__ void debug_vector<node<double>>( int id, node<double>* V, int m, int n);
+extern template  __global__ void debug_vector<node<int> >(int id, node<int>* V, int m, int n);
+extern template  __global__ void debug_vector<node<double> >( int id, node<double>* V, int m, int n);
 
 template<typename T>  __host__  T* get_temp(T a);
 extern template  __host__ int* get_temp(int a);

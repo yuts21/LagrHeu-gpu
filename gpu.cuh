@@ -27,8 +27,8 @@ extern template __global__ void vectorReduction<int>(int* V, int m, int n, int b
 extern template __global__ void vectorReduction<double>(double* V, int m, int n, int bnum,double* ans, int op);
 
 
-extern template __global__ void vectorReduction<node<int>>(node<int>* V, int m, int n, int bnum,node<int>* ans, int op);
-extern template __global__ void vectorReduction<node<double>>(node<double>* V, int m, int n, int bnum,node<double>* ans, int op);
+extern template __global__ void vectorReduction<node<int> >(node<int>* V, int m, int n, int bnum,node<int>* ans, int op);
+extern template __global__ void vectorReduction<node<double> >(node<double>* V, int m, int n, int bnum,node<double>* ans, int op);
 
 
 
@@ -50,8 +50,8 @@ extern template __global__ void vectorReduction<node<double>>(node<double>* V, i
 template<typename T> void doReduction(T* V, int m, int n, T* ans, int op);
 extern template void doReduction<int>(int* V, int m, int n, int* ans, int op);
 extern template void doReduction<double>(double* V, int m, int n, double* ans, int op);
-extern template void doReduction<node<int>>(node<int>* V, int m, int n, node<int>* ans, int op);
-extern template void doReduction<node<double>>(node<double>* V, int m, int n, node<double>* ans, int op);
+extern template void doReduction<node<int> >(node<int>* V, int m, int n, node<int>* ans, int op);
+extern template void doReduction<node<double> >(node<double>* V, int m, int n, node<double>* ans, int op);
 
 __global__ void randStatesInit(curandState* state, unsigned long seed, int n);
 
