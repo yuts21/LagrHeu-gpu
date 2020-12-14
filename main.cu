@@ -70,15 +70,16 @@ int main(int argc, char *argv[]) {
     delete LAGR;
 
     clock_t end_t = clock();
+    cerr<<(double)(end_t - start_t)/CLOCKS_PER_SEC<<endl;
     if (isVerbose)
         cout << "Time: " << (double)(end_t - start_t)/CLOCKS_PER_SEC << endl;
     auto ans= GAP->zub;
     cout <<ans<< endl;
     int *solbest = new int[GAP->n];
     checkCudaErrors(cudaMemcpy(solbest, GAP->solbest, GAP->n * sizeof(int), cudaMemcpyDeviceToHost));
-    for (int i = 0; i < GAP->n - 1; i++)
-        cerr << solbest[i] << " ";
-    cerr << solbest[GAP->n - 1] << endl;
+    // for (int i = 0; i < GAP->n - 1; i++)
+    //     cerr << solbest[i] << " ";
+    // cerr << solbest[GAP->n - 1] << endl;
     delete solbest;
 
     if (isVerbose) {
