@@ -159,7 +159,7 @@ else ifneq ($(TARGET_ARCH),$(HOST_ARCH))
         HOST_COMPILER ?= powerpc64le-linux-gnu-g++
     endif
 endif
-HOST_COMPILER ?= g++
+HOST_COMPILER ?= g++-5
 NVCC          := $(CUDA_PATH)/bin/nvcc -ccbin $(HOST_COMPILER)
 
 # internal flags
@@ -259,7 +259,7 @@ else
       BUILD_TYPE := release
 endif
 
-ALL_CCFLAGS :=
+ALL_CCFLAGS := -std=c++11
 ALL_CCFLAGS += $(NVCCFLAGS)
 ALL_CCFLAGS += $(EXTRA_NVCCFLAGS)
 ALL_CCFLAGS += $(addprefix -Xcompiler ,$(CCFLAGS))
@@ -280,7 +280,7 @@ LIBRARIES :=
 
 # Gencode arguments
 # SMS ?= 60 61 70 75 80 86
-SMS ?= 61
+SMS ?= 35
 
 ifeq ($(SMS),)
 $(info >>> WARNING - no SM architectures have been specified - waiving sample <<<)

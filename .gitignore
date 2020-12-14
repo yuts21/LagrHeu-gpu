@@ -1,3 +1,4 @@
 *.o
 LagrHeu
 .vscode/
+serial/lagr.log
