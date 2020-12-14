@@ -13,7 +13,7 @@ Lagrangian::Lagrangian(GeneralizedAssignemnt* GAPinstance, int & zz) : zub(zz)
    sol = GAP->sol;
    solbest = GAP->solbest;
    req = GAP->req;
-   printf("ZUB:%d\n", zub);
+   // printf("ZUB:%d\n", zub);
 }
 
 Lagrangian::~Lagrangian()

@@ -30,9 +30,8 @@ int main(int argc, char *argv[]) {
 
     // GAP类与对象
     GeneralizedAssignemnt* GAP = new GeneralizedAssignemnt();
-    int res;
 
-    bool isVerbose = true; // 是否输出调试信息
+    bool isVerbose = false; // 是否输出调试信息
     string filePath = argv[1]; // 数据文件相对路径名
     if (filePath.empty()) {
         cout << "Input filePath is empty!" << endl;
@@ -67,18 +66,19 @@ int main(int argc, char *argv[]) {
 
     if (isVerbose)
         cout << "Relaxing assignments ---------------" << endl;
-    res = LAGR->lagrCap(GAP->c, alpha, alphastep, minalpha, innerIter, maxIter);
+    int res = LAGR->lagrCap(GAP->c, alpha, alphastep, minalpha, innerIter, maxIter);
     delete LAGR;
 
     clock_t end_t = clock();
     if (isVerbose)
         cout << "Time: " << (double)(end_t - start_t)/CLOCKS_PER_SEC << endl;
-    cout << GAP->zub << endl;
+    auto ans= GAP->zub;
+    cout <<ans<< endl;
     int *solbest = new int[GAP->n];
     checkCudaErrors(cudaMemcpy(solbest, GAP->solbest, GAP->n * sizeof(int), cudaMemcpyDeviceToHost));
     for (int i = 0; i < GAP->n - 1; i++)
-        cout << solbest[i] << " ";
-    cout << solbest[GAP->n - 1] << endl;
+        cerr << solbest[i] << " ";
+    cerr << solbest[GAP->n - 1] << endl;
     delete solbest;
 
     if (isVerbose) {

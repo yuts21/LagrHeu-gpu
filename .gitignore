@@ -1,3 +1,5 @@
 *.o
 LagrHeu
+benchLog.txt
+testLog.txt
 .vscode/
