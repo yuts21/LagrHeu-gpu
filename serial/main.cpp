@@ -1,5 +1,6 @@
 #include "GAP.h"
 #include "Lagrangian.h"
+#include <ctime>
 #include <iostream>
 
 /******************
@@ -10,22 +11,20 @@
  *******************/
 
 int main(int argc, char *argv[]) {
-    // 计算运行总时间
-    // clock_t start_t = 0, end_t = 1;
     // GAP类与对象
     GeneralizedAssignemnt *GAP = new GeneralizedAssignemnt();
     string fileName, path;
     int res;
 
-    int isVerbose = atoi(argv[2]); // 是否输出调试信息
-    string instance = argv[4];     // 数据文件相对路径名（json格式）
-    double alpha = atof(argv[6]);
-    double alphastep = atof(argv[8]); // alpha更新的频率
-    double minalpha = atof(argv[10]);
-    int innerIter = atoi(argv[12]); // 每循环x次，更新alpha
-    int maxIter = atoi(argv[14]);   // 最多循环次数
-    int algoType = atoi(argv[16]);  // 算法种类，1为松弛容量，其他为松弛分配
-    double seed = atof(argv[18]);
+    bool isVerbose = false;
+    string instance = argv[1];
+    double alpha = 2.546;
+    double alphastep = 0.936; // alpha更新的频率
+    double minalpha = 0.01;
+    int innerIter = 98; // 每循环x次，更新alpha
+    int maxIter = 619;  // 最多循环次数
+    int algoType = 2;   // 算法种类，1为松弛容量，其他为松弛分配
+    double seed = 505;
 
     // path = "c:/AAAToBackup/ricerche/GAP/istanze/instances/homemade/";
     path = "";
@@ -59,6 +58,8 @@ int main(int argc, char *argv[]) {
     // LAGR类与对象
     Lagrangian *LAGR = new Lagrangian(GAP, GAP->zub);
 
+    clock_t start_t = clock();
+
     if (algoType == 1) {
         if (isVerbose)
             cout << "Relaxing capacities ---------------" << endl;
@@ -72,8 +73,10 @@ int main(int argc, char *argv[]) {
         delete LAGR;
     LAGR = NULL;
 
-    // end_t = clock();
-    // if(isVerbose) cout << "Time: " << (double)(end_t - start_t)/CLOCKS_PER_SEC << endl;
+    clock_t end_t = clock();
+    cerr << (double)(end_t - start_t) / CLOCKS_PER_SEC << endl;
+    if (isVerbose)
+        cout << "Time: " << (double)(end_t - start_t) / CLOCKS_PER_SEC << endl;
     cout << GAP->zub << endl;
 
     if (isVerbose) {

@@ -1,5 +1,5 @@
-CXX = g++
-CXXFLAGS = -g -Wall -O -Wreorder
+CXX = g++-5
+CXXFLAGS = -g -Wall -Wreorder -std=c++11
 LDADD =
 
 OBJ = main.o GAP.o Lagrangian.o LocalSearch.o
